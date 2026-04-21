@@ -5,11 +5,25 @@ import { motion } from "framer-motion";
 type ResultDisplayProps = {
   pdMm: number | null;
   precision: "baixa" | "media" | "alta";
+  qualityMessage: string;
   history: string[];
   onSave: () => void;
 };
 
-export default function ResultDisplay({ pdMm, precision, history, onSave }: ResultDisplayProps) {
+export default function ResultDisplay({
+  pdMm,
+  precision,
+  qualityMessage,
+  history,
+  onSave
+}: ResultDisplayProps) {
+  const qualityTone =
+    precision === "alta"
+      ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300"
+      : precision === "media"
+        ? "border-amber-500/40 bg-amber-500/10 text-amber-300"
+        : "border-rose-500/40 bg-rose-500/10 text-rose-300";
+
   return (
     <motion.section
       initial={{ opacity: 0, y: 6 }}
@@ -27,6 +41,7 @@ export default function ResultDisplay({ pdMm, precision, history, onSave }: Resu
       <div className="mt-3 inline-flex rounded-full border border-slate-700 px-3 py-1 text-xs uppercase text-slate-300">
         Precisao: {precision}
       </div>
+      <p className={`mt-3 rounded-xl border px-3 py-2 text-sm ${qualityTone}`}>{qualityMessage}</p>
 
       <button
         onClick={onSave}

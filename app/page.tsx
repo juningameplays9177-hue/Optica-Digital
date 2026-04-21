@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import Calibration from "./components/Calibration";
 import Camera from "./components/Camera";
@@ -29,6 +29,8 @@ export default function HomePage() {
   } | null>(null);
   const [measureWindow, setMeasureWindow] = useState<number[]>([]);
   const [confidence, setConfidence] = useState(0);
+  const [qualityMessage, setQualityMessage] = useState("Aguardando deteccao...");
+  const lastAutoSavedRef = useRef<{ value: number; at: number } | null>(null);
 
   useEffect(() => {
     const raw = localStorage.getItem(HISTORY_KEY);
@@ -67,6 +69,25 @@ export default function HomePage() {
     return "baixa";
   }, [confidence, measureWindow]);
 
+  useEffect(() => {
+    if (!pdMm) {
+      setQualityMessage("Centralize o rosto para iniciar a medicao.");
+      return;
+    }
+
+    if (precision === "alta") {
+      setQualityMessage("Medição boa: rosto bem posicionado e leitura estável.");
+      return;
+    }
+
+    if (precision === "media") {
+      setQualityMessage("Medição aceitável: ajuste levemente o posicionamento para melhorar.");
+      return;
+    }
+
+    setQualityMessage("Medição ruim: aproxime o rosto e mantenha-se parado.");
+  }, [pdMm, precision]);
+
   const saveMeasurement = () => {
     if (!pdMm) return;
     const item = `${new Date().toLocaleString("pt-BR")} - ${pdMm.toFixed(1)} mm`;
@@ -74,6 +95,22 @@ export default function HomePage() {
     setHistory(next);
     localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
   };
+
+  useEffect(() => {
+    if (!pdMm || precision !== "alta") return;
+
+    const now = Date.now();
+    const last = lastAutoSavedRef.current;
+    const isSameValue = last ? Math.abs(last.value - pdMm) < 0.2 : false;
+    const isTooSoon = last ? now - last.at < 6000 : false;
+    if (isSameValue && isTooSoon) return;
+
+    const item = `${new Date().toLocaleString("pt-BR")} - ${pdMm.toFixed(1)} mm (auto)`;
+    const next = [item, ...history].slice(0, 8);
+    setHistory(next);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
+    lastAutoSavedRef.current = { value: pdMm, at: now };
+  }, [history, pdMm, precision]);
 
   return (
     <main className="min-h-screen bg-bg px-4 py-6">
@@ -94,7 +131,13 @@ export default function HomePage() {
         {video && <FaceDetector video={video} onDetection={handleDetection} onStatus={setStatus} />}
 
         <Calibration pxPerMm={pxPerMm} onChange={setPxPerMm} />
-        <ResultDisplay pdMm={pdMm} precision={precision} history={history} onSave={saveMeasurement} />
+        <ResultDisplay
+          pdMm={pdMm}
+          precision={precision}
+          qualityMessage={qualityMessage}
+          history={history}
+          onSave={saveMeasurement}
+        />
 
         <div className="rounded-2xl border border-slate-800 bg-soft p-3 text-xs text-slate-400">
           Processamento 100% local no navegador. Nenhuma imagem e enviada ou armazenada.
