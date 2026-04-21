@@ -6,6 +6,7 @@ import Calibration from "./components/Calibration";
 import Camera, { type FacingMode } from "./components/Camera";
 import FaceDetector, { FaceDetectorOutput } from "./components/FaceDetector";
 import ResultDisplay from "./components/ResultDisplay";
+import RearCameraFixedBar from "./components/RearCameraFixedBar";
 
 const HISTORY_KEY = "pupilometro-history";
 const DEFAULT_PX_PER_MM = 3.4;
@@ -114,7 +115,8 @@ export default function HomePage() {
   }, [history, pdMm, precision]);
 
   return (
-    <main className="min-h-screen bg-bg px-4 py-6">
+    <>
+    <main className="min-h-screen bg-bg px-4 py-6 pb-40">
       <div className="mx-auto flex w-full max-w-xl flex-col gap-4">
         <header className="text-center">
           <h1 className="text-3xl font-bold tracking-tight text-cyan-300">Pupilometro Digital</h1>
@@ -174,5 +176,12 @@ export default function HomePage() {
         </div>
       </div>
     </main>
+
+    <RearCameraFixedBar
+      facing={cameraFacing}
+      onRear={() => setCameraFacing("environment")}
+      onFront={() => setCameraFacing("user")}
+    />
+    </>
   );
 }
