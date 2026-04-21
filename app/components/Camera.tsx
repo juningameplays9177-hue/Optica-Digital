@@ -209,25 +209,49 @@ export default function Camera({ onVideoReady, eyeCenters, guidanceText }: Camer
           )}
         </div>
 
-        <div className="absolute right-3 top-3 z-10 flex max-w-[min(100%,12rem)] flex-col gap-2">
-          <button
-            type="button"
-            onClick={() => setFacing((f) => (f === "user" ? "environment" : "user"))}
-            className="pointer-events-auto rounded-xl border border-slate-600 bg-black/70 px-3 py-2.5 text-left text-xs font-semibold leading-snug text-slate-100 shadow-lg backdrop-blur transition hover:bg-black/85"
-          >
-            {facing === "user" ? "Usar camera de tras" : "Voltar para camera da frente"}
-          </button>
-          <button
-            type="button"
-            onClick={() => setFlipHorizontal((v) => !v)}
-            className="pointer-events-auto rounded-xl border border-slate-600 bg-black/70 px-3 py-2.5 text-left text-xs font-semibold leading-snug text-slate-100 shadow-lg backdrop-blur transition hover:bg-black/85"
-          >
-            {flipHorizontal ? "Desligar espelho" : "Espelhar imagem (corrigir lado)"}
-          </button>
-        </div>
       </div>
 
-      <div className="glass absolute bottom-3 left-3 right-3 rounded-xl px-4 py-3 text-sm text-slate-200">
+      {/* Controles sempre visíveis: mesma lógica de captura/detecção para frontal e traseira */}
+      <div className="border-t border-slate-800 bg-panel/90 px-3 py-3">
+        <p className="mb-2 text-center text-[11px] font-medium uppercase tracking-wide text-slate-500">
+          Escolha a camera
+        </p>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setFacing("user")}
+            className={`min-h-[48px] flex-1 rounded-2xl border-2 px-2 py-3 text-sm font-bold transition ${
+              facing === "user"
+                ? "border-cyan-400 bg-cyan-500/20 text-cyan-100 shadow-[0_0_0_1px_rgba(34,211,238,0.35)]"
+                : "border-slate-700 bg-soft text-slate-300 hover:border-slate-500"
+            }`}
+          >
+            Camera frontal
+            <span className="mt-0.5 block text-[11px] font-normal text-slate-400">Selfie</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setFacing("environment")}
+            className={`min-h-[48px] flex-1 rounded-2xl border-2 px-2 py-3 text-sm font-bold transition ${
+              facing === "environment"
+                ? "border-cyan-400 bg-cyan-500/20 text-cyan-100 shadow-[0_0_0_1px_rgba(34,211,238,0.35)]"
+                : "border-slate-700 bg-soft text-slate-300 hover:border-slate-500"
+            }`}
+          >
+            Camera traseira
+            <span className="mt-0.5 block text-[11px] font-normal text-slate-400">Verso do celular</span>
+          </button>
+        </div>
+        <button
+          type="button"
+          onClick={() => setFlipHorizontal((v) => !v)}
+          className="mt-2 w-full rounded-xl border border-slate-600 bg-soft py-2.5 text-xs font-semibold text-slate-200 transition hover:border-slate-500"
+        >
+          {flipHorizontal ? "Desligar espelho da imagem" : "Espelhar imagem (opcional)"}
+        </button>
+      </div>
+
+      <div className="glass rounded-b-3xl px-4 py-3 text-sm text-slate-200">
         {error ? error : isReady ? guidanceText : "Iniciando camera..."}
       </div>
     </div>
