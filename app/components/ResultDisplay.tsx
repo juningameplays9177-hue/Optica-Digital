@@ -1,7 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
-
 type ResultDisplayProps = {
   pdMm: number | null;
   precision: "baixa" | "media" | "alta";
@@ -25,11 +23,7 @@ export default function ResultDisplay({
         : "border-rose-500/40 bg-rose-500/10 text-rose-300";
 
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="glass rounded-2xl p-5"
-    >
+    <section className="glass rounded-2xl p-5">
       <h2 className="text-lg font-semibold">Resultado</h2>
       <div className="mt-3 flex items-end gap-2">
         <span className="text-5xl font-bold tracking-tight text-cyan-300">
@@ -61,6 +55,6 @@ export default function ResultDisplay({
           )}
         </div>
       </div>
-    </motion.section>
+    </section>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { motion } from "framer-motion";
 import Calibration from "./components/Calibration";
 import Camera, { type FacingMode } from "./components/Camera";
 import FaceDetector, { FaceDetectorOutput } from "./components/FaceDetector";
@@ -116,41 +115,84 @@ export default function HomePage() {
 
   return (
     <>
-    <main className="min-h-screen bg-bg px-4 py-6 pb-40">
+    <main
+      className="min-h-screen bg-bg px-4 py-6 pb-40"
+      style={{
+        minHeight: "100vh",
+        backgroundColor: "#09090b",
+        color: "#e2e8f0",
+        paddingBottom: "10rem"
+      }}
+    >
       <div className="mx-auto flex w-full max-w-xl flex-col gap-4">
-        <header className="text-center">
-          <h1 className="text-3xl font-bold tracking-tight text-cyan-300">Pupilometro Digital</h1>
-          <p className="mt-1 text-sm text-slate-400">Medicao local da distancia pupilar (PD)</p>
+        <header className="text-center" style={{ textAlign: "center" }}>
+          <h1
+            className="text-3xl font-bold tracking-tight text-cyan-300"
+            style={{ color: "#67e8f9", fontSize: "1.75rem", margin: "0 0 0.25rem 0" }}
+          >
+            Pupilometro Digital
+          </h1>
+          <p className="mt-1 text-sm text-slate-400" style={{ color: "#94a3b8", margin: 0 }}>
+            Medicao local da distancia pupilar (PD)
+          </p>
         </header>
 
-        <div className="w-full rounded-2xl border-2 border-cyan-500/60 bg-gradient-to-b from-slate-900 to-black p-3 shadow-[0_0_28px_rgba(6,182,212,0.35)]">
-          <p className="mb-2 text-center text-xs font-bold uppercase tracking-wide text-cyan-200">
+        {/* Estilos INLINE: aparecem mesmo se Tailwind/JS falharem em parte */}
+        <div
+          style={{
+            width: "100%",
+            boxSizing: "border-box",
+            padding: 14,
+            borderRadius: 14,
+            border: "3px solid #06b6d4",
+            backgroundColor: "#0f172a",
+            marginBottom: 8
+          }}
+        >
+          <p style={{ margin: "0 0 10px 0", textAlign: "center", fontSize: 11, fontWeight: 800, color: "#a5f3fc", textTransform: "uppercase" }}>
             Camera do exame
           </p>
           <button
             type="button"
             onClick={() => setCameraFacing("environment")}
-            className="mb-2 w-full rounded-xl bg-cyan-500 py-4 text-base font-black uppercase tracking-wide text-black shadow-lg ring-2 ring-cyan-300/80 transition hover:bg-cyan-400 active:scale-[0.99]"
+            style={{
+              width: "100%",
+              minHeight: 54,
+              marginBottom: 10,
+              borderRadius: 12,
+              border: "2px solid #0891b2",
+              backgroundColor: "#06b6d4",
+              color: "#020617",
+              fontSize: 17,
+              fontWeight: 900,
+              cursor: "pointer"
+            }}
           >
-            Usar camera traseira
+            CAMERA TRASEIRA
           </button>
           <button
             type="button"
             onClick={() => setCameraFacing("user")}
-            className="w-full rounded-xl border-2 border-slate-500 bg-slate-800/90 py-3 text-sm font-bold text-slate-100 transition hover:bg-slate-700 active:scale-[0.99]"
+            style={{
+              width: "100%",
+              minHeight: 48,
+              borderRadius: 12,
+              border: "2px solid #64748b",
+              backgroundColor: "#1e293b",
+              color: "#f8fafc",
+              fontSize: 15,
+              fontWeight: 700,
+              cursor: "pointer"
+            }}
           >
             Camera frontal (selfie)
           </button>
-          <p className="mt-2 text-center text-[11px] text-slate-500">
-            O mesmo exame nas duas: escolha traseira para filmar com o verso do celular.
+          <p style={{ margin: "10px 0 0 0", textAlign: "center", fontSize: 11, color: "#94a3b8" }}>
+            Mesma medicao nas duas cameras.
           </p>
         </div>
 
-        <motion.section
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="glass rounded-3xl p-2 sm:p-3"
-        >
+        <section className="glass rounded-3xl p-2 sm:p-3" style={{ opacity: 1 }}>
           <Camera
             facing={cameraFacing}
             onFacingChange={setCameraFacing}
@@ -158,7 +200,7 @@ export default function HomePage() {
             eyeCenters={eyeCenters}
             guidanceText={status}
           />
-        </motion.section>
+        </section>
 
         {video && <FaceDetector video={video} onDetection={handleDetection} onStatus={setStatus} />}
 

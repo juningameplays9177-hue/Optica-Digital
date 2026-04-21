@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { useEffect, useReducer, useRef, useState } from "react";
 
 export type FacingMode = "user" | "environment";
@@ -200,19 +199,13 @@ export default function Camera({
 
           {leftDot && rightDot && (
             <>
-              <motion.div
+              <div
                 className="absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-lime-300"
                 style={{ left: `${leftDot.x}px`, top: `${leftDot.y}px` }}
-                initial={{ scale: 0.6, opacity: 0.6 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.2 }}
               />
-              <motion.div
+              <div
                 className="absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-lime-300"
                 style={{ left: `${rightDot.x}px`, top: `${rightDot.y}px` }}
-                initial={{ scale: 0.6, opacity: 0.6 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.2 }}
               />
             </>
           )}

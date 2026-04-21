@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { useState } from "react";
 
 type CalibrationProps = {
@@ -18,11 +17,7 @@ export default function Calibration({ pxPerMm, onChange }: CalibrationProps) {
   };
 
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="glass rounded-2xl p-4"
-    >
+    <section className="glass rounded-2xl p-4">
       <h2 className="mb-2 text-lg font-semibold">Calibracao</h2>
       <p className="mb-3 text-sm text-slate-300">
         Insira a largura do cartao em pixels para melhorar a precisao. Valor real do cartao: 85.6 mm.
@@ -43,6 +38,6 @@ export default function Calibration({ pxPerMm, onChange }: CalibrationProps) {
         </button>
       </div>
       <p className="mt-3 text-xs text-slate-400">Escala atual: {pxPerMm.toFixed(2)} px/mm</p>
-    </motion.section>
+    </section>
   );
 }

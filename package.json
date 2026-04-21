@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "face-api.js": "^0.22.2",
-    "framer-motion": "^11.11.17",
     "next": "^14.2.33",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"

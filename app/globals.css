@@ -6,6 +6,11 @@
   color-scheme: dark;
 }
 
+/* Fallback se o bundle do Tailwind nao carregar (evita tela branca) */
+html {
+  background-color: #09090b;
+}
+
 body {
   @apply bg-bg text-slate-100 antialiased;
 }
