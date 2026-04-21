@@ -9,6 +9,9 @@ type CameraProps = {
   onVideoReady: (video: HTMLVideoElement | null) => void;
   eyeCenters: { left: { x: number; y: number }; right: { x: number; y: number } } | null;
   guidanceText: string;
+  /** Controlado pela pagina para garantir botoes sempre visiveis fora do preview */
+  facing: FacingMode;
+  onFacingChange: (next: FacingMode) => void;
 };
 
 /**
@@ -106,12 +109,17 @@ async function openCameraStream(facing: FacingMode): Promise<MediaStream> {
 const btnBase =
   "min-h-[52px] flex-1 rounded-xl px-2 py-2 text-center text-sm font-bold leading-tight transition active:scale-[0.98]";
 
-export default function Camera({ onVideoReady, eyeCenters, guidanceText }: CameraProps) {
+export default function Camera({
+  onVideoReady,
+  eyeCenters,
+  guidanceText,
+  facing,
+  onFacingChange
+}: CameraProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const frameRef = useRef<HTMLDivElement | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
-  const [facing, setFacing] = useState<FacingMode>("user");
   const [flipHorizontal, setFlipHorizontal] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
   const [, bumpOverlay] = useReducer((n: number) => n + 1, 0);
@@ -172,8 +180,8 @@ export default function Camera({ onVideoReady, eyeCenters, guidanceText }: Camer
   const idleRing = "border-2 border-slate-600 bg-slate-900/90 text-slate-100 hover:border-cyan-500/60";
 
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-slate-800 bg-black shadow-glow">
-      <div ref={frameRef} className="relative h-[min(55vh,420px)] min-h-[280px] w-full">
+    <div className="relative overflow-visible rounded-3xl border border-slate-800 bg-black shadow-glow">
+      <div ref={frameRef} className="relative h-[min(55vh,420px)] min-h-[280px] w-full overflow-hidden rounded-t-3xl">
         <video
           ref={videoRef}
           muted
@@ -211,7 +219,7 @@ export default function Camera({ onVideoReady, eyeCenters, guidanceText }: Camer
         </div>
 
         {/* Botões sobre o preview: sempre visíveis (mesmo com tela preta / erro de permissão) */}
-        <div className="pointer-events-auto absolute bottom-0 left-0 right-0 z-20 p-2 sm:p-3">
+        <div className="pointer-events-auto absolute bottom-0 left-0 right-0 z-[100] p-2 sm:p-3">
           <p className="mb-1.5 text-center text-[10px] font-bold uppercase tracking-wider text-cyan-200/90 drop-shadow">
             Escolha a camera para o exame
           </p>
@@ -219,7 +227,7 @@ export default function Camera({ onVideoReady, eyeCenters, guidanceText }: Camer
             <button
               type="button"
               aria-pressed={facing === "user"}
-              onClick={() => setFacing("user")}
+              onClick={() => onFacingChange("user")}
               className={`${btnBase} ${facing === "user" ? activeRing : idleRing}`}
             >
               Frontal
@@ -228,7 +236,7 @@ export default function Camera({ onVideoReady, eyeCenters, guidanceText }: Camer
             <button
               type="button"
               aria-pressed={facing === "environment"}
-              onClick={() => setFacing("environment")}
+              onClick={() => onFacingChange("environment")}
               className={`${btnBase} ${facing === "environment" ? activeRing : idleRing}`}
             >
               Traseira
@@ -259,7 +267,7 @@ export default function Camera({ onVideoReady, eyeCenters, guidanceText }: Camer
             <button
               type="button"
               onClick={() => {
-                setFacing("environment");
+                onFacingChange("environment");
                 setRetryKey((k) => k + 1);
               }}
               className="rounded-xl border-2 border-cyan-400 bg-transparent px-4 py-2.5 text-center text-sm font-bold text-cyan-200 hover:bg-cyan-500/10"
