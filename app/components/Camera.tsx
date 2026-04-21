@@ -59,7 +59,6 @@ async function openCameraStream(facing: FacingMode): Promise<MediaStream> {
     }
   }
 
-  // Câmera traseira: alguns aparelhos ignoram facingMode até termos deviceId
   if (facing === "environment") {
     let devices = await navigator.mediaDevices.enumerateDevices();
     let videos = devices.filter((d) => d.kind === "videoinput");
@@ -71,7 +70,7 @@ async function openCameraStream(facing: FacingMode): Promise<MediaStream> {
         devices = await navigator.mediaDevices.enumerateDevices();
         videos = devices.filter((d) => d.kind === "videoinput");
       } catch {
-        /* segue com lista possivelmente sem label */
+        /* segue */
       }
     }
 
@@ -98,12 +97,14 @@ async function openCameraStream(facing: FacingMode): Promise<MediaStream> {
     throw new Error("Camera traseira indisponivel");
   }
 
-  // Frontal: último recurso sem facingMode (alguns desktops)
   return navigator.mediaDevices.getUserMedia({
     video: { ...VIDEO_OPTS },
     audio: false
   });
 }
+
+const btnBase =
+  "min-h-[52px] flex-1 rounded-xl px-2 py-2 text-center text-sm font-bold leading-tight transition active:scale-[0.98]";
 
 export default function Camera({ onVideoReady, eyeCenters, guidanceText }: CameraProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -111,11 +112,8 @@ export default function Camera({ onVideoReady, eyeCenters, guidanceText }: Camer
   const [error, setError] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [facing, setFacing] = useState<FacingMode>("user");
-  /**
-   * Muitos celulares já entregam a frontal já espelhada; espelhar de novo deixa invertido.
-   * Começa desligado — o usuário usa "Espelhar" se precisar (ex.: webcam de notebook).
-   */
   const [flipHorizontal, setFlipHorizontal] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
   const [, bumpOverlay] = useReducer((n: number) => n + 1, 0);
 
   const mirrorDisplay = flipHorizontal;
@@ -151,7 +149,7 @@ export default function Camera({ onVideoReady, eyeCenters, guidanceText }: Camer
         stream.getTracks().forEach((track) => track.stop());
       }
     };
-  }, [bumpOverlay, facing, onVideoReady]);
+  }, [bumpOverlay, facing, onVideoReady, retryKey]);
 
   useEffect(() => {
     const el = frameRef.current;
@@ -170,9 +168,12 @@ export default function Camera({ onVideoReady, eyeCenters, guidanceText }: Camer
     rightDot = mapVideoPointToOverlay(video, eyeCenters.right.x, eyeCenters.right.y, mirrorDisplay);
   }
 
+  const activeRing = "border-2 border-cyan-400 bg-cyan-500 text-black shadow-[0_0_20px_rgba(6,182,212,0.45)]";
+  const idleRing = "border-2 border-slate-600 bg-slate-900/90 text-slate-100 hover:border-cyan-500/60";
+
   return (
     <div className="relative overflow-hidden rounded-3xl border border-slate-800 bg-black shadow-glow">
-      <div ref={frameRef} className="relative h-[420px] w-full">
+      <div ref={frameRef} className="relative h-[min(55vh,420px)] min-h-[280px] w-full">
         <video
           ref={videoRef}
           muted
@@ -182,11 +183,11 @@ export default function Camera({ onVideoReady, eyeCenters, guidanceText }: Camer
         />
 
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
 
-          <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 gap-10">
-            <div className="h-16 w-16 rounded-full border-2 border-cyan-300/70" />
-            <div className="h-16 w-16 rounded-full border-2 border-cyan-300/70" />
+          <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 gap-8 sm:gap-10">
+            <div className="h-14 w-14 rounded-full border-2 border-cyan-400/80 sm:h-16 sm:w-16" />
+            <div className="h-14 w-14 rounded-full border-2 border-cyan-400/80 sm:h-16 sm:w-16" />
           </div>
 
           {leftDot && rightDot && (
@@ -209,50 +210,64 @@ export default function Camera({ onVideoReady, eyeCenters, guidanceText }: Camer
           )}
         </div>
 
-      </div>
-
-      {/* Controles sempre visíveis: mesma lógica de captura/detecção para frontal e traseira */}
-      <div className="border-t border-slate-800 bg-panel/90 px-3 py-3">
-        <p className="mb-2 text-center text-[11px] font-medium uppercase tracking-wide text-slate-500">
-          Escolha a camera
-        </p>
-        <div className="flex gap-2">
+        {/* Botões sobre o preview: sempre visíveis (mesmo com tela preta / erro de permissão) */}
+        <div className="pointer-events-auto absolute bottom-0 left-0 right-0 z-20 p-2 sm:p-3">
+          <p className="mb-1.5 text-center text-[10px] font-bold uppercase tracking-wider text-cyan-200/90 drop-shadow">
+            Escolha a camera para o exame
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              aria-pressed={facing === "user"}
+              onClick={() => setFacing("user")}
+              className={`${btnBase} ${facing === "user" ? activeRing : idleRing}`}
+            >
+              Frontal
+              <span className="mt-0.5 block text-[10px] font-semibold opacity-90">Selfie</span>
+            </button>
+            <button
+              type="button"
+              aria-pressed={facing === "environment"}
+              onClick={() => setFacing("environment")}
+              className={`${btnBase} ${facing === "environment" ? activeRing : idleRing}`}
+            >
+              Traseira
+              <span className="mt-0.5 block text-[10px] font-semibold opacity-90">Exame</span>
+            </button>
+          </div>
           <button
             type="button"
-            onClick={() => setFacing("user")}
-            className={`min-h-[48px] flex-1 rounded-2xl border-2 px-2 py-3 text-sm font-bold transition ${
-              facing === "user"
-                ? "border-cyan-400 bg-cyan-500/20 text-cyan-100 shadow-[0_0_0_1px_rgba(34,211,238,0.35)]"
-                : "border-slate-700 bg-soft text-slate-300 hover:border-slate-500"
-            }`}
+            onClick={() => setFlipHorizontal((v) => !v)}
+            className="mt-2 w-full rounded-lg border border-slate-500/80 bg-black/55 py-2 text-[11px] font-semibold text-slate-100 backdrop-blur hover:bg-black/70"
           >
-            Camera frontal
-            <span className="mt-0.5 block text-[11px] font-normal text-slate-400">Selfie</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setFacing("environment")}
-            className={`min-h-[48px] flex-1 rounded-2xl border-2 px-2 py-3 text-sm font-bold transition ${
-              facing === "environment"
-                ? "border-cyan-400 bg-cyan-500/20 text-cyan-100 shadow-[0_0_0_1px_rgba(34,211,238,0.35)]"
-                : "border-slate-700 bg-soft text-slate-300 hover:border-slate-500"
-            }`}
-          >
-            Camera traseira
-            <span className="mt-0.5 block text-[11px] font-normal text-slate-400">Verso do celular</span>
+            {flipHorizontal ? "Desligar espelho" : "Espelhar imagem (opcional)"}
           </button>
         </div>
-        <button
-          type="button"
-          onClick={() => setFlipHorizontal((v) => !v)}
-          className="mt-2 w-full rounded-xl border border-slate-600 bg-soft py-2.5 text-xs font-semibold text-slate-200 transition hover:border-slate-500"
-        >
-          {flipHorizontal ? "Desligar espelho da imagem" : "Espelhar imagem (opcional)"}
-        </button>
       </div>
 
-      <div className="glass rounded-b-3xl px-4 py-3 text-sm text-slate-200">
-        {error ? error : isReady ? guidanceText : "Iniciando camera..."}
+      <div className="glass rounded-b-3xl border-t border-slate-800 px-3 py-3 text-sm text-slate-200">
+        <p className="text-center">{error ? error : isReady ? guidanceText : "Iniciando camera..."}</p>
+        {error && (
+          <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:justify-center">
+            <button
+              type="button"
+              onClick={() => setRetryKey((k) => k + 1)}
+              className="rounded-xl bg-cyan-500 px-4 py-2.5 text-center text-sm font-bold text-black hover:bg-cyan-400"
+            >
+              Tentar novamente
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setFacing("environment");
+                setRetryKey((k) => k + 1);
+              }}
+              className="rounded-xl border-2 border-cyan-400 bg-transparent px-4 py-2.5 text-center text-sm font-bold text-cyan-200 hover:bg-cyan-500/10"
+            >
+              Usar camera traseira e tentar
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
