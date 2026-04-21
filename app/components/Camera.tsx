@@ -12,8 +12,8 @@ type CameraProps = {
 };
 
 /**
- * Converte coordenadas do frame do vídeo (face-api) para pixels na área exibida
- * com object-fit: cover. Na frontal, espelha no eixo X para coincidir com scaleX(-1).
+ * Converte coordenadas do frame (face-api) para pixels na área exibida com object-fit: cover.
+ * Quando o vídeo está espelhado (scaleX -1), aplica o mesmo espelhamento nas coordenadas X.
  */
 function mapVideoPointToOverlay(
   video: HTMLVideoElement,
@@ -43,15 +43,82 @@ function mapVideoPointToOverlay(
   return { x, y };
 }
 
+const VIDEO_OPTS = { width: { ideal: 1280 }, height: { ideal: 720 } };
+
+async function openCameraStream(facing: FacingMode): Promise<MediaStream> {
+  const attempts: MediaStreamConstraints[] = [
+    { video: { ...VIDEO_OPTS, facingMode: { ideal: facing } }, audio: false },
+    { video: { ...VIDEO_OPTS, facingMode: { exact: facing } }, audio: false }
+  ];
+
+  for (const c of attempts) {
+    try {
+      return await navigator.mediaDevices.getUserMedia(c);
+    } catch {
+      /* tenta próxima */
+    }
+  }
+
+  // Câmera traseira: alguns aparelhos ignoram facingMode até termos deviceId
+  if (facing === "environment") {
+    let devices = await navigator.mediaDevices.enumerateDevices();
+    let videos = devices.filter((d) => d.kind === "videoinput");
+
+    if (videos.length && videos.every((d) => !d.label)) {
+      try {
+        const warm = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        warm.getTracks().forEach((t) => t.stop());
+        devices = await navigator.mediaDevices.enumerateDevices();
+        videos = devices.filter((d) => d.kind === "videoinput");
+      } catch {
+        /* segue com lista possivelmente sem label */
+      }
+    }
+
+    const ranked = [...videos].sort((a, b) => {
+      const score = (id: MediaDeviceInfo) => {
+        const L = id.label.toLowerCase();
+        if (/back|rear|traseira|wide|environment|world/i.test(L)) return 2;
+        if (id.label) return 0;
+        return -1;
+      };
+      return score(b) - score(a);
+    });
+
+    for (const d of ranked) {
+      try {
+        return await navigator.mediaDevices.getUserMedia({
+          video: { ...VIDEO_OPTS, deviceId: { exact: d.deviceId } },
+          audio: false
+        });
+      } catch {
+        /* próximo deviceId */
+      }
+    }
+    throw new Error("Camera traseira indisponivel");
+  }
+
+  // Frontal: último recurso sem facingMode (alguns desktops)
+  return navigator.mediaDevices.getUserMedia({
+    video: { ...VIDEO_OPTS },
+    audio: false
+  });
+}
+
 export default function Camera({ onVideoReady, eyeCenters, guidanceText }: CameraProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const frameRef = useRef<HTMLDivElement | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [facing, setFacing] = useState<FacingMode>("user");
+  /**
+   * Muitos celulares já entregam a frontal já espelhada; espelhar de novo deixa invertido.
+   * Começa desligado — o usuário usa "Espelhar" se precisar (ex.: webcam de notebook).
+   */
+  const [flipHorizontal, setFlipHorizontal] = useState(false);
   const [, bumpOverlay] = useReducer((n: number) => n + 1, 0);
 
-  const mirrorDisplay = facing === "user";
+  const mirrorDisplay = flipHorizontal;
 
   useEffect(() => {
     let stream: MediaStream | null = null;
@@ -61,14 +128,7 @@ export default function Camera({ onVideoReady, eyeCenters, guidanceText }: Camer
         setIsReady(false);
         setError(null);
 
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: { ideal: facing },
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
-          },
-          audio: false
-        });
+        stream = await openCameraStream(facing);
 
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
@@ -149,13 +209,20 @@ export default function Camera({ onVideoReady, eyeCenters, guidanceText }: Camer
           )}
         </div>
 
-        <div className="absolute right-3 top-3 z-10 flex flex-col gap-2">
+        <div className="absolute right-3 top-3 z-10 flex max-w-[min(100%,12rem)] flex-col gap-2">
           <button
             type="button"
             onClick={() => setFacing((f) => (f === "user" ? "environment" : "user"))}
-            className="pointer-events-auto rounded-xl border border-slate-600 bg-black/60 px-3 py-2 text-xs font-semibold text-slate-100 shadow-lg backdrop-blur transition hover:bg-black/80"
+            className="pointer-events-auto rounded-xl border border-slate-600 bg-black/70 px-3 py-2.5 text-left text-xs font-semibold leading-snug text-slate-100 shadow-lg backdrop-blur transition hover:bg-black/85"
           >
-            {facing === "user" ? "Camera traseira" : "Camera frontal"}
+            {facing === "user" ? "Usar camera de tras" : "Voltar para camera da frente"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setFlipHorizontal((v) => !v)}
+            className="pointer-events-auto rounded-xl border border-slate-600 bg-black/70 px-3 py-2.5 text-left text-xs font-semibold leading-snug text-slate-100 shadow-lg backdrop-blur transition hover:bg-black/85"
+          >
+            {flipHorizontal ? "Desligar espelho" : "Espelhar imagem (corrigir lado)"}
           </button>
         </div>
       </div>
