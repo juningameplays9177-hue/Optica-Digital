@@ -105,7 +105,7 @@ header('Content-Type: text/html; charset=utf-8');
       <p class="sub">Medi&ccedil;&atilde;o local da dist&acirc;ncia pupilar (PD)</p>
 
       <section class="bloco-video" aria-label="Area da camera">
-        <span style="font-size:3rem; line-height:1; opacity:0.9;" aria-hidden="true">&#128247;</span>
+        <span style="font-size:3rem; line-height:1;" aria-hidden="true">&#128247;</span>
         <p><strong>Area da camera</strong></p>
         <p class="sim">(simulada nesta p&aacute;gina &mdash; sem JavaScript adicional no ficheiro)</p>
       </section>
