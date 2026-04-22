@@ -44,7 +44,7 @@ export default function RearCameraFixedBar({ facing, onRear, onFront }: Props) {
           color: "#a5f3fc"
         }}
       >
-        Escolha a camera
+        Escolha a camera do celular
       </p>
       <button
         type="button"
@@ -63,7 +63,7 @@ export default function RearCameraFixedBar({ facing, onRear, onFront }: Props) {
           WebkitTapHighlightColor: "transparent"
         }}
       >
-        CAMERA TRASEIRA
+        USAR CAMERA DE TRAS
       </button>
       <button
         type="button"
@@ -81,7 +81,7 @@ export default function RearCameraFixedBar({ facing, onRear, onFront }: Props) {
           WebkitTapHighlightColor: "transparent"
         }}
       >
-        Camera frontal (selfie)
+        USAR CAMERA FRONTAL
       </button>
     </div>
   );

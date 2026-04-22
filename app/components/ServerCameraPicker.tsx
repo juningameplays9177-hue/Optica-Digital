@@ -24,7 +24,7 @@ export default function ServerCameraPicker() {
           color: "#a5f3fc"
         }}
       >
-        Camera do exame
+        Usar camera de tras do celular
       </p>
       <form method="get" action="/" style={{ marginBottom: 10 }}>
         <button
@@ -43,7 +43,7 @@ export default function ServerCameraPicker() {
             cursor: "pointer"
           }}
         >
-          CAMERA TRASEIRA
+          USAR CAMERA DE TRAS DO CELULAR
         </button>
       </form>
       <form method="get" action="/">
@@ -63,7 +63,7 @@ export default function ServerCameraPicker() {
             cursor: "pointer"
           }}
         >
-          Camera frontal (selfie)
+          USAR CAMERA FRONTAL (SELFIE)
         </button>
       </form>
       <p style={{ margin: "12px 0 0 0", textAlign: "center", fontSize: 11, color: "#64748b" }}>

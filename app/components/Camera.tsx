@@ -214,7 +214,7 @@ export default function Camera({
         {/* Botões sobre o preview: sempre visíveis (mesmo com tela preta / erro de permissão) */}
         <div className="pointer-events-auto absolute bottom-0 left-0 right-0 z-[100] p-2 sm:p-3">
           <p className="mb-1.5 text-center text-[10px] font-bold uppercase tracking-wider text-cyan-200/90 drop-shadow">
-            Escolha a camera para o exame
+            Escolha a camera do celular
           </p>
           <div className="flex gap-2">
             <button
@@ -232,8 +232,8 @@ export default function Camera({
               onClick={() => onFacingChange("environment")}
               className={`${btnBase} ${facing === "environment" ? activeRing : idleRing}`}
             >
-              Traseira
-              <span className="mt-0.5 block text-[10px] font-semibold opacity-90">Exame</span>
+              Camera de tras
+              <span className="mt-0.5 block text-[10px] font-semibold opacity-90">Celular</span>
             </button>
           </div>
           <button
@@ -265,7 +265,7 @@ export default function Camera({
               }}
               className="rounded-xl border-2 border-cyan-400 bg-transparent px-4 py-2.5 text-center text-sm font-bold text-cyan-200 hover:bg-cyan-500/10"
             >
-              Usar camera traseira e tentar
+              Usar camera de tras e tentar
             </button>
           </div>
         )}
