@@ -7,12 +7,10 @@ import type { NextRequest } from "next/server";
  */
 export function middleware(request: NextRequest) {
   const res = NextResponse.next();
-
-  if (request.nextUrl.pathname === "/" || request.nextUrl.pathname.endsWith("/")) {
+  if (request.nextUrl.pathname === "/" || request.nextUrl.pathname === "") {
     res.headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
     res.headers.set("Pragma", "no-cache");
   }
-
   return res;
 }
 

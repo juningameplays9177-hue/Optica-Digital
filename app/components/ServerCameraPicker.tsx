@@ -1,11 +1,13 @@
 /**
  * Renderizado no SERVIDOR (sem "use client") — aparece no HTML mesmo se o bundle React nao rodar.
  * Formularios GET funcionam sem JavaScript: recarregam a pagina com ?camera=environment ou user.
+ * className + estilos inline: continua visivel se Tailwind nao carregar.
  */
 export default function ServerCameraPicker() {
   return (
     <>
       <div
+        className="pupilo-picker-top"
         style={{
           maxWidth: 576,
           margin: "0 auto",
@@ -14,20 +16,10 @@ export default function ServerCameraPicker() {
           backgroundColor: "#020617"
         }}
       >
-        <p
-          style={{
-            margin: "0 0 12px 0",
-            textAlign: "center",
-            fontSize: 12,
-            fontWeight: 800,
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-            color: "#a5f3fc"
-          }}
-        >
+        <p className="pupilo-picker-top-title" style={{ margin: "0 0 12px 0" }}>
           Camera do celular
         </p>
-        <form method="get" action="/" style={{ marginBottom: 10 }}>
+        <form method="get" action="/" className="pupilo-mb-10" style={{ marginBottom: 10 }}>
           <button
             type="submit"
             name="camera"
@@ -70,6 +62,7 @@ export default function ServerCameraPicker() {
       </div>
 
       <div
+        className="pupilo-bar-fixed"
         style={{
           position: "fixed",
           left: 0,

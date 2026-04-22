@@ -1,5 +1,9 @@
 import { Suspense } from "react";
+import "./globals.css";
 import HomeClient from "./home-client";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 /**
  * ServerCameraPicker fica no layout (sempre no HTML). Aqui so carrega a parte interativa.
