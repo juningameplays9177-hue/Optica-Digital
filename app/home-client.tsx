@@ -36,6 +36,25 @@ export default function HomeClient() {
   const lastAutoSavedRef = useRef<{ value: number; at: number } | null>(null);
 
   useEffect(() => {
+    // Evita cache quebrado de chunks causado por service workers antigos.
+    if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
+
+    navigator.serviceWorker.getRegistrations().then((registrations) => {
+      registrations.forEach((registration) => {
+        registration.unregister().catch(() => undefined);
+      });
+    });
+
+    if ("caches" in window) {
+      caches.keys().then((keys) => {
+        keys.forEach((key) => {
+          caches.delete(key).catch(() => undefined);
+        });
+      });
+    }
+  }, []);
+
+  useEffect(() => {
     const c = searchParams.get("camera");
     if (c === "environment") setCameraFacing("environment");
     else if (c === "user") setCameraFacing("user");
