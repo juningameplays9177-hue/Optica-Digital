@@ -6,7 +6,6 @@ import Calibration from "./components/Calibration";
 import Camera, { type FacingMode } from "./components/Camera";
 import FaceDetector, { FaceDetectorOutput } from "./components/FaceDetector";
 import ResultDisplay from "./components/ResultDisplay";
-import RearCameraFixedBar from "./components/RearCameraFixedBar";
 
 const HISTORY_KEY = "pupilometro-history";
 const DEFAULT_PX_PER_MM = 3.4;
@@ -191,11 +190,6 @@ export default function HomeClient() {
         </div>
       </main>
 
-      <RearCameraFixedBar
-        facing={cameraFacing}
-        onRear={() => setCameraFacing("environment")}
-        onFront={() => setCameraFacing("user")}
-      />
     </>
   );
 }
