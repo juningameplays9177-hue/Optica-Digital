@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import ServerCameraPicker from "./components/ServerCameraPicker";
 import { CRITICAL_PUPILO_CSS } from "./lib/critical-pupilo-css";
 
 export const metadata: Metadata = {
@@ -45,7 +44,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           abra de novo: <strong>http://127.0.0.1:3000</strong> (nao abra o site como ficheiro no Explorer). Se
           vires 404 no /_next, apaga a pasta <strong>.next</strong> e executa de novo o comando.
         </p>
-        <ServerCameraPicker />
         {children}
       </body>
     </html>
