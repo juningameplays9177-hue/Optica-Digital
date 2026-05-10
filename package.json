@@ -8,7 +8,9 @@
     "dev:clean": "npm run clean && next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "prepare": "node ./scripts/git-hooks-setup.mjs",
+    "setup-hooks": "node ./scripts/git-hooks-setup.mjs"
   },
   "dependencies": {
     "face-api.js": "^0.22.2",

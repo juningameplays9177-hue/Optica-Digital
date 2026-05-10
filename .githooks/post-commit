@@ -1,0 +1,3 @@
+#!/bin/sh
+# Push automático após cada commit (credenciais: Git Credential Manager / SSH já configurados).
+git push -q origin HEAD 2>/dev/null || true

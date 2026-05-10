@@ -1,5 +1,11 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import ReceitaClient from "./receita-client";
+
+export const metadata: Metadata = {
+  title: "Receituário | Pupilômetro Digital",
+  description: "Ficha de dados da receita óptica — preenchimento local."
+};
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;

@@ -1,5 +1,21 @@
 import type { Metadata, Viewport } from "next";
+import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import { CRITICAL_PUPILO_CSS } from "./lib/critical-pupilo-css";
+import "./globals.css";
+
+const fontSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-sans",
+  weight: ["400", "500", "600", "700", "800"]
+});
+
+const fontMono = JetBrains_Mono({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-mono",
+  weight: ["400", "500", "600"]
+});
 
 export const metadata: Metadata = {
   title: "Pupilometro Digital",
@@ -25,13 +41,17 @@ export const revalidate = 0;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className="pupilo-html" style={{ backgroundColor: "#09090b" }}>
+    <html
+      lang="pt-BR"
+      className={`pupilo-html ${fontSans.variable} ${fontMono.variable}`}
+      style={{ backgroundColor: "#09090b" }}
+    >
       <head>
         <style id="pupilo-critical" dangerouslySetInnerHTML={{ __html: CRITICAL_PUPILO_CSS }} />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
       </head>
       <body
-        className="pupilo-body"
+        className="pupilo-body min-h-screen font-sans antialiased [font-feature-settings:'ss01']"
         style={{
           margin: 0,
           minHeight: "100%",
@@ -39,11 +59,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           color: "#e2e8f0"
         }}
       >
-        <p className="pupilo-notice" style={{ margin: 0 }}>
-          Se a tela estiver em branco sem botoes, feche a aba, rode <strong>npm run dev:clean</strong> e
-          abra de novo: <strong>http://127.0.0.1:3000</strong> (nao abra o site como ficheiro no Explorer). Se
-          vires 404 no /_next, apaga a pasta <strong>.next</strong> e executa de novo o comando.
-        </p>
         {children}
       </body>
     </html>
