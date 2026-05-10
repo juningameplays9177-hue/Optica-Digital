@@ -1,3 +1,0 @@
-#!/bin/sh
-# Push automático após cada commit (requer credenciais Git já configuradas).
-git push origin HEAD 2>&1
