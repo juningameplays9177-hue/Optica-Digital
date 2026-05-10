@@ -103,7 +103,16 @@ export default function ResultDisplay({
           </button>
         ) : null}
       </div>
-      <div className="mt-3 flex items-end gap-2">
+
+      <button
+        onClick={onSave}
+        disabled={!pdMm}
+        className="mt-3 w-full rounded-xl bg-cyan-500 px-4 py-3 text-[15px] font-semibold leading-snug text-black transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-300 sm:py-3.5"
+      >
+        Salvar Medicao
+      </button>
+
+      <div className="mt-4 flex items-end gap-2">
         <span className="text-5xl font-bold tracking-tight text-cyan-300">
           {pdMm ? pdMm.toFixed(1) : "--"}
         </span>
@@ -114,14 +123,6 @@ export default function ResultDisplay({
         Precisao: {precision}
       </div>
       <p className={`mt-3 rounded-xl border px-3 py-2 text-sm ${qualityTone}`}>{qualityMessage}</p>
-
-      <button
-        onClick={onSave}
-        disabled={!pdMm}
-        className="mt-4 w-full rounded-xl bg-cyan-500 px-4 py-3 font-semibold text-black transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-300"
-      >
-        Salvar Medicao
-      </button>
 
       <div className="mt-4 border-t border-slate-800 pt-3">
         <p className="mb-2 text-xs uppercase tracking-wide text-slate-400">Historico local</p>
