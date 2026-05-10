@@ -2,10 +2,14 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
+  applyDoctorOpticalBaseline,
+  buildAssistMedicoNote,
   emptyDraft,
   loadReceitaDraft,
   mergeDraftWithPd,
+  PUPILOMETRO_PD_MM_KEY,
   readStoredPdMm,
   type EyeFields,
   type ReceitaDraft,
@@ -197,9 +201,11 @@ function MarkIcon({ className }: { className?: string }) {
 }
 
 export default function ReceitaClient() {
+  const searchParams = useSearchParams();
   const [data, setData] = useState<ReceitaDraft>(() => emptyDraft());
   const [pdMm, setPdMm] = useState<number | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const [assistHint, setAssistHint] = useState<string | null>(null);
 
   const refreshFromStorage = useCallback(() => {
     const pd = readStoredPdMm();
@@ -209,10 +215,43 @@ export default function ReceitaClient() {
   }, []);
 
   useEffect(() => {
-    refreshFromStorage();
+    const assist = searchParams.get("assist") === "1";
+    const pdRaw = searchParams.get("pd");
+    const labelEnc = searchParams.get("label") ?? "";
+    let label = labelEnc;
+    try {
+      label = decodeURIComponent(labelEnc.replace(/\+/g, " "));
+    } catch {
+      label = labelEnc;
+    }
+
+    const pdParsed = pdRaw ? parseFloat(String(pdRaw).replace(",", ".")) : NaN;
+    const pd = Number.isFinite(pdParsed) && pdParsed > 0 ? pdParsed : null;
+
+    if (assist && pd != null && typeof window !== "undefined") {
+      const draft = loadReceitaDraft();
+      let next = mergeDraftWithPd(draft, pd);
+      next = applyDoctorOpticalBaseline(next);
+      if (!next.adicao.trim()) {
+        next = { ...next, adicao: "0.00" };
+      }
+      next = { ...next, medico: buildAssistMedicoNote(pd, label) };
+      localStorage.setItem(PUPILOMETRO_PD_MM_KEY, String(pd));
+      saveReceitaDraft(next);
+      setPdMm(pd);
+      setData(next);
+      setAssistHint(
+        `Preenchimento assistido com base no registo: ${label.length > 180 ? `${label.slice(0, 180)}…` : label}`
+      );
+    } else {
+      refreshFromStorage();
+      setAssistHint(null);
+    }
+
     setHydrated(true);
+
     const onStorage = (e: StorageEvent) => {
-      if (e.key === "pupilometro-pd-mm" || e.key === "optica-receita-draft") refreshFromStorage();
+      if (e.key === PUPILOMETRO_PD_MM_KEY || e.key === "optica-receita-draft") refreshFromStorage();
     };
     window.addEventListener("storage", onStorage);
     const onFocus = () => refreshFromStorage();
@@ -221,7 +260,7 @@ export default function ReceitaClient() {
       window.removeEventListener("storage", onStorage);
       window.removeEventListener("focus", onFocus);
     };
-  }, [refreshFromStorage]);
+  }, [searchParams, refreshFromStorage]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -308,22 +347,31 @@ export default function ReceitaClient() {
                 "linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 12%), linear-gradient(90deg, rgba(6,182,212,0.06), transparent 35%)"
             }}
           >
-            <div className="flex flex-col gap-3 border-b border-white/[0.06] pb-8 lg:flex-row lg:items-center lg:justify-between">
-              <p className="max-w-2xl text-sm leading-relaxed text-zinc-400">
-                Formulário clínico em duas distâncias. Os campos <strong className="font-semibold text-emerald-400/95">DNP</strong> são calculados a partir da{" "}
-                <strong className="text-zinc-200">distância pupilar</strong> guardada pelo pupilômetro; os restantes valores
-                ficam para transcrição da receita física e são salvos apenas no seu navegador.
-              </p>
-              {pdMm != null ? (
-                <div className="shrink-0 rounded-xl border border-white/[0.06] bg-white/[0.03] px-4 py-3 text-xs text-zinc-500">
-                  <span className="font-mono font-semibold text-cyan-200/90">Longe ≈ {(pdMm / 2).toFixed(1)} mm</span>
-                  <span className="mx-2 text-zinc-600">·</span>
-                  <span className="font-mono font-semibold text-emerald-200/80">
-                    Perto ≈ {(Math.max(pdMm - 2.5, 0) / 2).toFixed(1)} mm
-                  </span>
-                  <span className="ml-2 text-zinc-600">por olho</span>
+            <div className="space-y-6 border-b border-white/[0.06] pb-8">
+              {assistHint ? (
+                <div className="w-full rounded-xl border border-cyan-500/30 bg-cyan-950/35 px-4 py-3 text-sm leading-relaxed text-cyan-100/95">
+                  <strong className="font-semibold text-cyan-200">Modo assistido.</strong>{" "}
+                  {assistHint} Esfera, cilindro e eixo usam modelo neutro; substitua pelos valores da receita clínica.
                 </div>
               ) : null}
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <p className="max-w-2xl text-sm leading-relaxed text-zinc-400">
+                  Formulário clínico em duas distâncias. Os campos{" "}
+                  <strong className="font-semibold text-emerald-400/95">DNP</strong> são calculados a partir da{" "}
+                  <strong className="text-zinc-200">distância pupilar</strong> guardada pelo pupilômetro; os restantes
+                  valores ficam para transcrição da receita física e são salvos apenas no seu navegador.
+                </p>
+                {pdMm != null ? (
+                  <div className="shrink-0 rounded-xl border border-white/[0.06] bg-white/[0.03] px-4 py-3 text-xs text-zinc-500">
+                    <span className="font-mono font-semibold text-cyan-200/90">Longe ≈ {(pdMm / 2).toFixed(1)} mm</span>
+                    <span className="mx-2 text-zinc-600">·</span>
+                    <span className="font-mono font-semibold text-emerald-200/80">
+                      Perto ≈ {(Math.max(pdMm - 2.5, 0) / 2).toFixed(1)} mm
+                    </span>
+                    <span className="ml-2 text-zinc-600">por olho</span>
+                  </div>
+                ) : null}
+              </div>
             </div>
 
             <div className="mt-10 space-y-14">

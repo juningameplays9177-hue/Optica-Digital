@@ -39,6 +39,42 @@ export const emptyDraft = (): ReceitaDraft => ({
   medico: ""
 });
 
+export function parsePdMmFromHistoryLine(line: string): number | null {
+  const m = line.match(/(\d+[.,]\d+|\d+)\s*mm/i);
+  if (!m) return null;
+  const n = parseFloat(m[1].replace(",", "."));
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+/**
+ * Preenche campos ópticos ainda vazios com valores-base neutros (ausência de astigmatismo / esfera plana),
+ * típicos de modelo antes da conferência com a receita do prescritor. Não altera DNP.
+ */
+export function applyDoctorOpticalBaseline(draft: ReceitaDraft): ReceitaDraft {
+  const eye = (e: EyeFields): EyeFields => ({
+    esferico: e.esferico.trim() ? e.esferico : "0.00",
+    cilindrico: e.cilindrico.trim() ? e.cilindrico : "0.00",
+    eixo: e.eixo.trim() ? e.eixo : "180",
+    altura: e.altura.trim() ? e.altura : "",
+    dnp: e.dnp
+  });
+  return {
+    longe: { od: eye(draft.longe.od), oe: eye(draft.longe.oe) },
+    perto: { od: eye(draft.perto.od), oe: eye(draft.perto.oe) },
+    adicao: draft.adicao,
+    medico: draft.medico
+  };
+}
+
+export function buildAssistMedicoNote(pdMm: number, historyLabel: string): string {
+  const label = historyLabel.trim() || "(histórico sem descrição)";
+  return (
+    `Assistência Pupilômetro Digital — DP total ${pdMm.toFixed(1)} mm. ` +
+    `Registo: ${label}. ` +
+    `DNP calculados automaticamente; esfera, cilindro e eixo seguem modelo neutro até conferência com o prescritor.`
+  );
+}
+
 /** DNP monocular (mm) a partir do DP total: longe ≈ metade; perto ≈ metade do (total − inseto), heuristica comum. */
 export function dnpsFromPdTotalMm(pdMm: number) {
   const safe = Number.isFinite(pdMm) && pdMm > 0 ? pdMm : null;

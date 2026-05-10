@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { parsePdMmFromHistoryLine, PUPILOMETRO_PD_MM_KEY } from "../lib/receita-storage";
 
 type ResultDisplayProps = {
   pdMm: number | null;
@@ -30,6 +31,13 @@ const btnDangerSm = `${btnDanger} shrink-0 rounded-lg px-2.5 py-1.5 text-xs font
 const btnDangerHeader = `${btnDanger} shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold tracking-wide uppercase`;
 
 const btnDangerConfirm = `${btnDanger} min-w-[9rem] rounded-xl px-4 py-2.5 text-sm font-semibold`;
+
+const btnReceitaHist =
+  "shrink-0 rounded-lg border border-cyan-500/40 bg-gradient-to-b from-cyan-600/90 to-cyan-800/95 px-2.5 py-1.5 text-xs font-bold tracking-wide text-white " +
+  "shadow-[0_0_0_1px_rgba(34,211,238,0.25),0_4px_14px_-2px_rgba(6,182,212,0.4)] transition duration-200 " +
+  "hover:border-cyan-400/60 hover:from-cyan-500 hover:to-cyan-700 hover:shadow-[0_0_20px_rgba(6,182,212,0.35)] " +
+  "active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900 " +
+  "disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none";
 
 export default function ResultDisplay({
   pdMm,
@@ -74,6 +82,17 @@ export default function ResultDisplay({
     closeDialog();
   };
 
+  const openReceitaFromHistory = (item: string) => {
+    const pd = parsePdMmFromHistoryLine(item);
+    if (pd == null || typeof window === "undefined") return;
+    localStorage.setItem(PUPILOMETRO_PD_MM_KEY, String(pd));
+    const u = new URL("/receita", window.location.origin);
+    u.searchParams.set("pd", String(pd));
+    u.searchParams.set("assist", "1");
+    u.searchParams.set("label", item.slice(0, 380));
+    window.open(u.toString(), "_blank", "noopener,noreferrer");
+  };
+
   return (
     <section className="glass relative rounded-2xl p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -111,12 +130,23 @@ export default function ResultDisplay({
             history.map((item, idx) => (
               <div
                 key={`${item}-${idx}`}
-                className="flex items-center justify-between gap-2 rounded-lg border border-slate-800/80 bg-slate-900/40 px-2 py-2"
+                className="flex flex-col gap-2 rounded-lg border border-slate-800/80 bg-slate-900/40 px-2 py-2 sm:flex-row sm:items-center"
               >
                 <p className="min-w-0 flex-1 break-words leading-snug">{item}</p>
-                <button type="button" onClick={() => openRemoveOne(idx)} className={btnDangerSm}>
-                  Remover
-                </button>
+                <div className="flex shrink-0 flex-wrap justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => openReceitaFromHistory(item)}
+                    disabled={parsePdMmFromHistoryLine(item) == null}
+                    className={btnReceitaHist}
+                    title="Abrir receita numa nova aba: DNP calculados e campos-base a partir desta medição"
+                  >
+                    Receita
+                  </button>
+                  <button type="button" onClick={() => openRemoveOne(idx)} className={btnDangerSm}>
+                    Remover
+                  </button>
+                </div>
               </div>
             ))
           ) : (
