@@ -6,6 +6,7 @@ import Calibration from "./components/Calibration";
 import Camera, { type FacingMode } from "./components/Camera";
 import FaceDetector, { FaceDetectorOutput } from "./components/FaceDetector";
 import ResultDisplay from "./components/ResultDisplay";
+import { PUPILOMETRO_PD_MM_KEY } from "./lib/receita-storage";
 
 const HISTORY_KEY = "pupilometro-history";
 const DEFAULT_PX_PER_MM = 3.4;
@@ -47,6 +48,18 @@ export default function HomeClient() {
     if (c === "environment") setCameraFacing("environment");
     else if (c === "user") setCameraFacing("user");
   }, [searchParams]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (pdMm != null && Number.isFinite(pdMm)) {
+      localStorage.setItem(PUPILOMETRO_PD_MM_KEY, String(pdMm));
+    }
+  }, [pdMm]);
+
+  const openReceitaEmNovaAba = () => {
+    if (typeof window === "undefined") return;
+    window.open(new URL("/receita", window.location.origin).toString(), "_blank", "noopener,noreferrer");
+  };
 
   useEffect(() => {
     const raw = localStorage.getItem(HISTORY_KEY);
@@ -179,6 +192,22 @@ export default function HomeClient() {
           {video && <FaceDetector video={video} onDetection={handleDetection} onStatus={setStatus} />}
 
           <Calibration pxPerMm={pxPerMm} onChange={setPxPerMm} />
+
+          <div className="rounded-2xl border border-slate-700/60 bg-slate-900/40 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Receituário</p>
+            <p className="mt-1 text-sm text-slate-500">
+              Abre uma nova guia com a ficha completa (longe, perto, adição, médico). Os DNP são sugeridos a partir da
+              medição atual de DP.
+            </p>
+            <button
+              type="button"
+              onClick={openReceitaEmNovaAba}
+              className="mt-3 w-full rounded-xl border border-cyan-500/40 bg-gradient-to-b from-cyan-600/90 to-cyan-800/90 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-cyan-950/40 transition hover:from-cyan-500 hover:to-cyan-700 hover:shadow-cyan-900/50 active:scale-[0.99]"
+            >
+              👁️ Abrir dados da receita (nova aba)
+            </button>
+          </div>
+
           <ResultDisplay
             pdMm={pdMm}
             precision={precision}
