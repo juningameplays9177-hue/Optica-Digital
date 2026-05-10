@@ -8,7 +8,6 @@ type ResultDisplayProps = {
   precision: "baixa" | "media" | "alta";
   qualityMessage: string;
   history: string[];
-  onSave: () => void;
   onRemoveHistoryItem: (index: number) => void;
   onClearHistory: () => void;
 };
@@ -44,7 +43,6 @@ export default function ResultDisplay({
   precision,
   qualityMessage,
   history,
-  onSave,
   onRemoveHistoryItem,
   onClearHistory
 }: ResultDisplayProps) {
@@ -104,15 +102,7 @@ export default function ResultDisplay({
         ) : null}
       </div>
 
-      <button
-        onClick={onSave}
-        disabled={!pdMm}
-        className="mt-3 w-full rounded-xl bg-cyan-500 px-4 py-3 text-[15px] font-semibold leading-snug text-black transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-300 sm:py-3.5"
-      >
-        Salvar Medicao
-      </button>
-
-      <div className="mt-4 flex items-end gap-2">
+      <div className="mt-3 flex items-end gap-2">
         <span className="text-5xl font-bold tracking-tight text-cyan-300">
           {pdMm ? pdMm.toFixed(1) : "--"}
         </span>

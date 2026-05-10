@@ -191,6 +191,15 @@ export default function HomeClient() {
 
           {video && <FaceDetector video={video} onDetection={handleDetection} onStatus={setStatus} />}
 
+          <button
+            type="button"
+            onClick={saveMeasurement}
+            disabled={!pdMm}
+            className="w-full rounded-xl bg-cyan-500 px-4 py-3 text-[15px] font-semibold leading-snug text-black transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-300 sm:py-3.5"
+          >
+            Salvar Medicao
+          </button>
+
           <Calibration pxPerMm={pxPerMm} onChange={setPxPerMm} />
 
           <div className="rounded-2xl border border-slate-700/60 bg-slate-900/40 p-4">
@@ -213,7 +222,6 @@ export default function HomeClient() {
             precision={precision}
             qualityMessage={qualityMessage}
             history={history}
-            onSave={saveMeasurement}
             onRemoveHistoryItem={removeHistoryItem}
             onClearHistory={clearHistory}
           />
