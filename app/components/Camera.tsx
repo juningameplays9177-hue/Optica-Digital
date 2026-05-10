@@ -120,7 +120,6 @@ export default function Camera({
   const [error, setError] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [flipHorizontal, setFlipHorizontal] = useState(false);
-  const [retryKey, setRetryKey] = useState(0);
   const [, bumpOverlay] = useReducer((n: number) => n + 1, 0);
 
   const mirrorDisplay = flipHorizontal;
@@ -156,7 +155,7 @@ export default function Camera({
         stream.getTracks().forEach((track) => track.stop());
       }
     };
-  }, [bumpOverlay, facing, onVideoReady, retryKey]);
+  }, [bumpOverlay, facing, onVideoReady]);
 
   useEffect(() => {
     const el = frameRef.current;
@@ -248,27 +247,6 @@ export default function Camera({
 
       <div className="glass rounded-b-3xl border-t border-slate-800 px-3 py-3 text-sm text-slate-200">
         <p className="text-center">{error ? error : isReady ? guidanceText : "Iniciando camera..."}</p>
-        {error && (
-          <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:justify-center">
-            <button
-              type="button"
-              onClick={() => setRetryKey((k) => k + 1)}
-              className="rounded-xl bg-cyan-500 px-4 py-2.5 text-center text-sm font-bold text-black hover:bg-cyan-400"
-            >
-              Tentar novamente
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                onFacingChange("environment");
-                setRetryKey((k) => k + 1);
-              }}
-              className="rounded-xl border-2 border-cyan-400 bg-transparent px-4 py-2.5 text-center text-sm font-bold text-cyan-200 hover:bg-cyan-500/10"
-            >
-              Usar camera de tras e tentar
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
